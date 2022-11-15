@@ -6,7 +6,7 @@ All project handouts can be found [here](https://cs1230.graphics/projects).
 # Extra Credits.
 ## EC 1: Distance from the object to the camera: search for "//extra credit 2"
 I used settings.extracredit2.
-I calculated distance using camera's position and the center of object, both in the world space. As the range of paramters (0~25) and that of distance (0~100) are significantly different, I rescaled distance by mulitplying (5 / 100). So, I divide ths parameters by (distance * 5 / 100).
+I calculated distance using camera's position and the center of object, both in the world space. As the range of paramters (0-25) and that of distance (0-100) are significantly different, I rescaled distance by mulitplying (5 / 100). So, I divide ths parameters by (distance * 5 / 100).
     
 ## EC 2: The number of objects in the scene: search for "//extra credit 1"
 I used settings.extracredit1.
