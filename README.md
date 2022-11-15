@@ -1,4 +1,4 @@
-# ray tracer and real-time rendering using OpenGL & GLSL
+# Ray tracer and real-time rendering using OpenGL & GLSL
 Most of my work is in  
 1. projects-ray-junsukha/src/raytracer and projects-ray-junsukha/src/raytracer/camera  
 2. rendering-3d/real-time-rendering/resources/shaders/ and rendering-3d/real-time-rendering/src
