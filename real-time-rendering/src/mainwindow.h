@@ -46,6 +46,7 @@ private:
     QCheckBox *ec3;
     QCheckBox *ec4;
 
+
 private slots:
     void onPerPixelFilter();
     void onKernelBasedFilter();
@@ -62,4 +63,5 @@ private slots:
     void onExtraCredit2();
     void onExtraCredit3();
     void onExtraCredit4();
+
 };

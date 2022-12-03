@@ -11,6 +11,8 @@ public:
     std::vector<float> getCubeData() {
         return m_vertexData; }
 
+    // insert u,v coordinates
+    void insertVec2(std::vector<float> &data, glm::vec2 v);
 private:
     void insertVec3(std::vector<float> &data, glm::vec3 v);
     void setVertexData();

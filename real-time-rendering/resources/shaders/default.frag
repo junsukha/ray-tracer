@@ -1,33 +1,24 @@
 #version 330 core
 /** fragment shader colors each vertex**/
 
-//struct GlobalSceneData
-//{
-//  float k_a;
-//  float k_d;
-//  float k_s;
-//  float shininess;
-//  vec4 worldSpaceLightPosition;
-//  vec4 worldSpaceCameraPosition;
-
-//};
+// texture mapping ec
+in vec2 uvCoord; // get this from defaut.vert
+uniform sampler2D myTexture2;
+// need to use something like: textureColor = texture(myTexture, uvCoord); and blend it with light color
 
 struct Light{
     vec3 function;
-    vec3 color;
+    vec4 color;
     vec4 position; // world space
     bool isDirectional;
+    bool isSpotLight;
     vec4 direction;
     float penumbra;
     float angle;
 };
 
-//uniform int numOfLights;
-//uniform GlobalSceneData globalSceneData;
-//uniform GlobalSceneData lights[numOfLights];
-
 uniform Light lights[8];
-int numOfLights = 8;
+//int numOfLights = 8;
 uniform int currentNumOfLights;
 
 // variables I need to get from vertex shader. Variables that are different for each vertex
@@ -54,9 +45,9 @@ uniform float k_s;
 
 // vary by object. but same for all vertices
 uniform float shininess;
-uniform vec3 o_a;
-uniform vec3 o_d;
-uniform vec3 o_s;
+uniform vec4 o_a;
+uniform vec4 o_d;
+uniform vec4 o_s;
 uniform vec3 function;
 
 // although it vaires for each light, it's the same for all vertices for each light
@@ -64,58 +55,99 @@ uniform vec3 function;
 uniform vec4 worldSpaceLightPosition;
 uniform vec4 directionLight; // direction of directional light
 
-uniform vec4 worldspaceCameraPosition;
+//uniform vec4 worldspaceCameraPosition;
 
+uniform int numOfLights;
 
-uniform bool isDirectionLight;
+// for spot light
+float calculateFallOff(Light light, float x) {
+    float outer = light.angle;
+    float inner =  light.angle -light.penumbra;
+    return -2 * pow((x - inner)/(outer-inner),3) + 3 * pow((x - inner) / (outer - inner),2);
+}
+
+// for spot light
+vec4 calculateSpotLightIntensity(vec4 surfacePosition, Light light) {// position is in worldspace
+    vec4 currentDirectionFromLightToPos = surfacePosition - light.position;
+    float dotProd = dot(normalize(currentDirectionFromLightToPos),
+                             normalize(light.direction));
+    float x = acos(dotProd);// angle (radian) between current direction and spotlight direction
+
+    float inner = light.angle - light.penumbra;
+    float outer = light.angle;
+    if (x <= inner) {
+        // return full light intensity
+        return light.color;
+    } else if (x > inner && x < outer){
+        return light.color * (1.f - calculateFallOff(light, x));
+    } else {
+        return light.color * 0.f;
+    }
+}
+
 void main() {
     // Remember that you need to renormalize vectors here if you want them to be normalized
 
     // Task 10: set your output color to white (i.e. vec4(1.0)). Make sure you get a white circle!
-    fragColor = vec4(1.0);
+    // fragColor = vec4(1.0);
     // Task 11: set your output color to the absolute value of your world-space normals,
     //          to make sure your normals are correct.
-    fragColor = abs(worldSpaceNormal);
+    // fragColor = abs(worldSpaceNormal);
     fragColor = vec4(0.0);
     // Task 12: add ambient component to output color
-    fragColor = vec4(vec3(k_a),1.f) * vec4(o_a,1.f);
+    fragColor = k_a * o_a;
 
-
+    vec4 intensity;
     vec4 fromSurfaceToLightWorldSpace;
-    float distance;
+    float dist;
     float ftt;
-
     for (int i = 0; i < numOfLights; ++i) {
+
         if (!lights[i].isDirectional) { // light is not directional light
             fromSurfaceToLightWorldSpace = lights[i].position - worldSpacePosition;
 
             // get distance from surface to light for attenuation
-            distance = length(lights[i].position - worldSpacePosition);
-            ftt = min(1.f, 1.f/(lights[i].function.x + distance * lights[i].function.y + pow(distance,2) * lights[i].function.z));
-        } else { // light is directional light
+            dist = max(0,distance(lights[i].position, worldSpacePosition));
+            if (dist == 0)
+                dist = 0.0001;
+
+            ftt = min(1.0, 1.0/(lights[i].function[0] + dist * lights[i].function[1] + pow(dist,2) * lights[i].function[2]));
+
+        }
+        else if (lights[i].isDirectional){ // light is directional light
             fromSurfaceToLightWorldSpace = -lights[i].direction;
             ftt = 1.f;
         }
 
+        if (lights[i].isSpotLight) {
+            intensity = calculateSpotLightIntensity(worldSpacePosition, lights[i]);
+        }else { // point light and directional light
+            intensity = lights[i].color;
+        }
+
+        // Texture mapping ec
+        // vec4 texturColor = texture(myTexture, uvCoord);
+        // blend textureColor and fragColor
+
         // Task 13: add diffuse component to output color
         // since light position of light direction is the same for all vertices,
         float diffuse = clamp(dot(normalize(worldSpaceNormal), normalize(fromSurfaceToLightWorldSpace)), 0.f, 1.f);
-    //    fragColor += k_d * clamp(diffuse, 0.f, 1.f);
-        fragColor += ftt * vec4(lights[i].color,1) * vec4(o_d,1) * vec4(vec3(k_d * diffuse), 0.f);
+
+        fragColor += ftt * intensity * k_d * o_d * diffuse;
 
         // Task 14: add specular component to output color
-    //    vec4 cameraPosition = inverse(viewMatrix) * vec4(0,0,0,1.f);
         vec4 fromSurfaceToCameraWorldSpace = normalize(worldSpaceCameraPosition - worldSpacePosition);
         // reflect(incident vector, surface normal vector).. incident vector = fromLightToSurface
-        vec4 reflected = reflect(normalize(-fromSurfaceToLightWorldSpace), normalize(worldSpaceNormal));
+        vec4 fromLightToSurfaceWorldspace = normalize(-fromSurfaceToLightWorldSpace);
+        vec4 reflected = reflect(normalize(fromLightToSurfaceWorldspace), normalize(worldSpaceNormal));
         // remember to normalize when using dot product
         float RE = clamp(dot(normalize(reflected), normalize(fromSurfaceToCameraWorldSpace)), 0.f, 1.f);
-        fragColor += ftt * vec4(lights[i].color,1) * vec4(o_s,1) * vec4(vec3(k_s * pow(RE, shininess)), 1.f);
+//        if (shininess == 0.f)
+//            shininess = 1e-3;
+        if (RE == 0.f)
+            RE = 1e-5;
+
+        fragColor += ftt * intensity * k_s * o_s * pow(RE, shininess);
     }
-//    fragColor[3] = 1;
+
 }
-// Task 3: add the ambient term
-//    int rgb = 3;
-//    for (int i = 0; i < rgb; i++) {
-//        illumination[i] += globalData.ka * material.cAmbient[i]; // ambient is vec4
-//    }

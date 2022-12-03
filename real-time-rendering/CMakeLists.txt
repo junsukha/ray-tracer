@@ -27,6 +27,7 @@ include_directories(src)
 add_executable(${PROJECT_NAME}
     src/main.cpp
 
+    src/utils/texturemap.cpp
     src/shapes/sphereSolution.cpp
     src/shapes/cylinder.cpp
     src/shapes/cube.cpp
@@ -38,6 +39,8 @@ add_executable(${PROJECT_NAME}
     src/utils/scenefilereader.cpp
     src/utils/sceneparser.cpp
 
+    src/utils/texturemap.h
+    src/utils/objreader2.h
     src/shapes/sphereSolution.h
     src/shapes/cylinder.h
     src/shapes/cube.h
@@ -75,8 +78,11 @@ qt6_add_resources(${PROJECT_NAME} "Resources"
     PREFIX
         "/"
     FILES
+        resources/images/kitten.png
         resources/shaders/default.frag
         resources/shaders/default.vert
+        resources/shaders/postprocessing.frag
+        resources/shaders/postprocessing.vert
 )
 
 # GLEW: this provides support for Windows (including 64-bit)

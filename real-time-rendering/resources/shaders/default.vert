@@ -3,6 +3,8 @@
 // vertex shader read in data contained in the VAO currently bound at the time of drawing
 layout(location = 0) in vec3 objectSpacePosition;
 layout(location = 1) in vec3 objectSpaceNormal;
+// add u,v to each shape generator
+layout(location = 2) in vec2 uvPosition;
 
 
 uniform mat4 modelMatrix; // constant across all vertices // will store model matrix (m_model) data here
@@ -13,8 +15,13 @@ uniform mat4 projectionMatrix;
 //         to be passed to the fragment shader
 out vec4 worldSpacePosition;
 out vec4 worldSpaceNormal;
+// for texture mapping
+out vec2 uvCoord;
 
 void main() {
+    // for texture mapping
+    uvCoord = uvPosition;
+
     // Task 8: compute the world-space position and normal, then pass them to
     //         the fragment shader using the variables created in task 5
 

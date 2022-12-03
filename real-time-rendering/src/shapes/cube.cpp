@@ -1,5 +1,5 @@
 #include "cube.h"
-
+#include "src/settings.h"
 Cube::Cube(int param1) {
     updateParams(param1);
 }
@@ -22,25 +22,48 @@ void Cube::makeTile(glm::vec3 topLeft,
     insertVec3(m_vertexData, topLeft);
     glm::vec3 normal = glm::normalize(glm::cross((bottomLeft - topLeft), (bottomRight - bottomLeft)));
     insertVec3(m_vertexData, normal);
+    if(settings.extraCredit4) {
+        glm::vec2 uv = glm::vec2(topLeft.x+0.5, topLeft.y+0.5);
+        insertVec2(m_vertexData, uv);
+    }
 
     insertVec3(m_vertexData, bottomLeft);
     insertVec3(m_vertexData, normal);
+    if(settings.extraCredit4) {
+        glm::vec2 uv = glm::vec2(bottomLeft.x+0.5, bottomLeft.y+0.5);
+        insertVec2(m_vertexData, uv);
+    }
 
     insertVec3(m_vertexData, bottomRight);
     insertVec3(m_vertexData, normal);
-
+    if(settings.extraCredit4) {
+        glm::vec2 uv = glm::vec2(topLeft.x+0.5, topLeft.y+0.5);
+        insertVec2(m_vertexData, uv);
+    }
 
     // triange where 90 degree is at top right
     insertVec3(m_vertexData, topLeft);
     normal = glm::normalize(glm::cross((bottomRight - topLeft), (topRight - bottomRight)));
 
     insertVec3(m_vertexData, normal);
+    if(settings.extraCredit4) {
+        glm::vec2 uv = glm::vec2(topLeft.x+0.5, topLeft.y+0.5);
+        insertVec2(m_vertexData, uv);
+    }
 
     insertVec3(m_vertexData, bottomRight);
     insertVec3(m_vertexData, normal);
+    if(settings.extraCredit4) {
+        glm::vec2 uv = glm::vec2(bottomRight.x+0.5, bottomRight.y+0.5);
+        insertVec2(m_vertexData, uv);
+    }
 
     insertVec3(m_vertexData, topRight);
     insertVec3(m_vertexData, normal);
+    if(settings.extraCredit4) {
+        glm::vec2 uv = glm::vec2(topRight.x+0.5, topRight.y+0.5);
+        insertVec2(m_vertexData, uv);
+    }
 }
 
 void Cube::makeFace(glm::vec3 topLeft,
@@ -156,4 +179,10 @@ void Cube::insertVec3(std::vector<float> &data, glm::vec3 v) {
     data.push_back(v.x);
     data.push_back(v.y);
     data.push_back(v.z);
+}
+
+// for textur mapping extra credit
+void Cube::insertVec2(std::vector<float> &data, glm::vec2 v) {
+    data.push_back(v.x);
+    data.push_back(v.y);
 }
